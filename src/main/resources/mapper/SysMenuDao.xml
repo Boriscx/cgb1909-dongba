@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tedu.dao.SysMenuDao">
+    <resultMap id="userMenuVo" type="com.tedu.pojo.UserMenuVo">
+        <id column="pid" property="id"/>
+        <result column="pname" property="name"/>
+        <result column="purl" property="url"/>
+        <collection property="childMenus" ofType="com.tedu.pojo.UserMenuVo">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="url" property="url"/>
+        </collection>
+    </resultMap>
+    <select id="findMenusByUserId" resultMap="userMenuVo">
+        SELECT cm.id, cm.name, cm.url, pm.id pid, pm.name pname, pm.url purl
+        FROM sys_menus cm
+                 left join sys_role_menus srm on cm.id = srm.menu_id
+                 left join sys_user_roles sur on srm.role_id = sur.role_id
+                 left join sys_menus pm on cm.parentId = pm.id
+        where sur.user_id = #{userId}
+          and cm.parentId is not null
+          and cm.type = 1;
+    </select>
+    <insert id="insertObject">
+        INSERT INTO sys_menus(name, url, type, sort, parentId, permission, createdUser, createdTime)
+        VALUES (#{name}, #{url}, #{type}, #{sort}, #{parentId}, #{permission}, #{createdUser}, now())
+    </insert>
+    <update id="updateObject">
+        update sys_menus
+        <set>
+            <if test="name != null || name != ''">name = #{name},</if>
+            <if test="url != null || url != ''">url = #{url},</if>
+            <if test="sort != null || sort != ''">sort = #{sort},</if>
+            <if test="parentId != null || parentId != ''">parentId = #{parentId},</if>
+            <if test="permission != null || permission != ''">permission = #{permission},</if>
+            <if test="note != null || note != ''">note = #{note},</if>
+            modifiedUser = #{modifiedUser},modifiedTime = now()
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteById">
+        delete
+        from sys_menus
+        where id = #{id}
+    </delete>
+
+    <select id="findObjects" resultType="com.tedu.entity.SysMenu">
+        SELECT c.id,
+               c.name,
+               c.parentId,
+               p.name parentName,
+               c.type,
+               c.url,
+               c.permission,
+               c.sort
+        FROM sys_menus c
+                 left join sys_menus p on c.parentId = p.id
+    </select>
+    <select id="findNoteObjects" resultType="com.tedu.pojo.MenuNote">
+        select c.id, c.name, c.parentId, p.name parentName
+        from sys_menus c
+                 left join sys_menus p on c.parentId = p.id
+    </select>
+</mapper>

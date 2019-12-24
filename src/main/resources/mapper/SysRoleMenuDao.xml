@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tedu.dao.SysRoleMenuDao">
+    <insert id="insertObject">
+        INSERT INTO sys_role_menus(role_id, menu_id)
+        VALUES (#{roleId}, #{menuId})
+    </insert>
+    <insert id="insertObjectByRoleIdAndMenuIds">
+        INSERT INTO sys_role_menus(role_id, menu_id)
+        <foreach open="VALUES" collection="menuIds" item="menuId" separator=",">
+             (#{roleId},#{menuId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteByColumns">
+        DELETE
+        FROM sys_role_menus
+        WHERE id = -1
+        <foreach collection="columnValues" open="or" separator="or" item="value">
+            ${columnName} = #{value}
+        </foreach>
+
+    </delete>
+
+    <select id="isExistByColumn" resultType="java.lang.Integer">
+        Select count(*)
+        from sys_role_menus
+        where ${columnName} = #{columnValue}
+    </select>
+</mapper>
